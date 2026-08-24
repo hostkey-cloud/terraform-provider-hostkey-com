@@ -6,12 +6,9 @@ Terraform provider for [Hostkey](https://hostkey.com/) (**.com** portal, InvAPI 
 
 Russian / `.ru` portal: [`terraform-provider-hostkey-ru`](https://github.com/hostkey-cloud/terraform-provider-hostkey-ru) (`hostkey-cloud/hostkey-ru`).
 
-> **Migrating from `hostkey-cloud/hostkey`:** set `source` to `hostkey-cloud/hostkey-com`, drop `region`, then  
-> `terraform state replace-provider 'registry.terraform.io/hostkey-cloud/hostkey' 'registry.terraform.io/hostkey-cloud/hostkey-com'`.
-
 ## Documentation
 
-Full attribute reference: [`docs/`](docs/) ([Terraform Registry](https://registry.terraform.io/providers/hostkey-cloud/hostkey-com/latest/docs)). Examples: [`examples/`](examples/). Split checklist: [`SPLIT.md`](SPLIT.md).
+Full attribute reference: [`docs/`](docs/) ([Terraform Registry](https://registry.terraform.io/providers/hostkey-cloud/hostkey-com/latest/docs)). Examples: [`examples/`](examples/).
 
 ### Resources
 
@@ -139,8 +136,7 @@ Calls `whmcs/request_cancellation` with `cancellation_type` / `cancellation_reas
 
 ## InvAPI notes
 
-* This provider always uses **`invapi.hostkey.com`**. Resource **`location_name`** is the data center (`NL`, `US`, `RU`, …), not the portal.
-* Provider **`region` was removed** (v0.2). For `.ru` use `hostkey-cloud/hostkey-ru`.
+* This provider always uses **`invapi.hostkey.com`**. Resource **`location_name`** is the data center (`NL`, `US`, `RU`, …), not the portal. For `.ru` use `hostkey-cloud/hostkey-ru`.
 * **`preset_name` / `os_name` / `traffic_plan_name`** must match InvAPI exactly (`bm.v2-promo`, not `v2-promo`).
 * Before ordering: `data.hostkey_presets` + `data.hostkey_traffic_plans` with **`instance_id`** = preset id.
 * Dedicated often has **two plans with the same `name` and different `price`** — use panel hints (`- FREE`, `(10000 P)`) or `traffic_plan_id`.
