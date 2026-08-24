@@ -112,7 +112,8 @@ func resultFieldError(raw json.RawMessage) error {
 	}
 	var s string
 	if err := json.Unmarshal(raw, &s); err == nil {
-		if s == "OK" || s == "" {
+		// InvAPI uses "OK"; some WHMCS endpoints use "success".
+		if s == "OK" || s == "" || strings.EqualFold(s, "success") {
 			return nil
 		}
 		return &APIError{Result: redactSecrets(s), Body: redactSecrets(string(raw))}

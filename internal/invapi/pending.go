@@ -448,6 +448,12 @@ func (c *Client) WaitForPendingServer(ctx context.Context, invoice int, callback
 	var lastErr error
 	resolvedCallback = strings.TrimSpace(callback)
 
+	if invoice > 0 {
+		if payStatus, payErr := c.WHMCSInvoicePaymentStatus(ctx, invoice); payErr == nil && OrderAwaitsPayment(payStatus) {
+			return 0, resolvedCallback, &PendingPaymentError{Invoice: invoice, Status: payStatus}
+		}
+	}
+
 	for {
 		sid, cb, lookErr := c.LookupPendingServer(ctx, invoice, resolvedCallback, known, wantHostname)
 		if cb != "" {

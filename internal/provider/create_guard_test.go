@@ -147,6 +147,17 @@ func TestPendingDeployWarningTitleDetail_TerminalVsTimeout(t *testing.T) {
 	if !strings.Contains(detail, "Re-run apply to wait") {
 		t.Fatalf("detail=%q", detail)
 	}
+
+	title, detail = pendingDeployWarningTitleDetail(
+		&invapi.PendingPaymentError{Invoice: 603548, Status: "Unpaid"},
+		603548, "", "pending:603548",
+	)
+	if title != "Waiting for invoice payment" {
+		t.Fatalf("title=%q", title)
+	}
+	if !strings.Contains(detail, "Pay this invoice") {
+		t.Fatalf("detail=%q", detail)
+	}
 }
 
 type memPrivate map[string][]byte

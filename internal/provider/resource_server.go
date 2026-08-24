@@ -381,7 +381,7 @@ func (r *serverResource) Schema(ctx context.Context, _ resource.SchemaRequest, r
 				},
 			},
 			"invoice": schema.Int64Attribute{
-				Description: "WHMCS invoice id from order_instance (set after Paid).",
+				Description: "WHMCS invoice id from order_instance (set once the order is placed, including Unpaid).",
 				Computed:    true,
 				PlanModifiers: []planmodifier.Int64{
 					int64planmodifier.UseStateForUnknown(),
@@ -685,6 +685,19 @@ func (r *serverResource) Create(ctx context.Context, req resource.CreateRequest,
 		}
 	}
 
+	// Auto-pay off / insufficient credit: order_instance returns Unpaid + invoice,
+	// and deploy never starts until the customer pays. Soft-exit immediately so
+	// Terraform prints a Warning (CLI cannot customize "Still creating...") and
+	// persists pending:<invoice> instead of polling for up to create-timeout.
+	if orderResp.Invoice > 0 && invapi.OrderAwaitsPayment(orderResp.Status) {
+		title, detail := pendingDeployWarningTitleDetail(
+			&invapi.PendingPaymentError{Invoice: orderResp.Invoice, Status: orderResp.Status},
+			orderResp.Invoice, orderResp.Callback, pendingID(orderResp.Invoice),
+		)
+		resp.Diagnostics.AddWarning(title, detail)
+		return
+	}
+
 	claimOwner := invapi.PendingClaimOwner(orderResp.Invoice, orderResp.Callback)
 	serverID := orderResp.ID
 	if serverID > 0 {
@@ -858,6 +871,20 @@ func (r *serverResource) Read(ctx context.Context, req resource.ReadRequest, res
 				}
 				title, detail := pendingDeployWarningTitleDetail(err, 0, cb, id)
 				resp.Diagnostics.AddWarning(title, detail)
+			} else if invoice, ok := pendingInvoiceFromState(state); ok {
+				if payStatus, payErr := r.client.WHMCSInvoicePaymentStatus(ctx, invoice); payErr == nil && invapi.OrderAwaitsPayment(payStatus) {
+					title, detail := pendingDeployWarningTitleDetail(
+						&invapi.PendingPaymentError{Invoice: invoice, Status: payStatus},
+						invoice, cb, id,
+					)
+					resp.Diagnostics.AddWarning(title, detail)
+				} else {
+					tflog.Info(ctx, "pending server not ready yet", map[string]any{"id": id, "err": err.Error()})
+					resp.Diagnostics.AddWarning(
+						"Server deploy still in progress",
+						fmt.Sprintf("%s. Apply will wait for this invoice (no new order). Live status is in the Hostkey panel until the server id is linked.", err.Error()),
+					)
+				}
 			} else {
 				tflog.Info(ctx, "pending server not ready yet", map[string]any{"id": id, "err": err.Error()})
 				resp.Diagnostics.AddWarning(

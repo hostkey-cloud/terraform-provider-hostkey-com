@@ -202,6 +202,14 @@ func pendingDeployWarningTitleDetail(err error, invoice int, callback, pendingID
 	if id == "" && invoice > 0 {
 		id = fmt.Sprintf("%s%d", pendingIDPrefix, invoice)
 	}
+	if invapi.IsPendingPayment(err) {
+		title = "Waiting for invoice payment"
+		detail = fmt.Sprintf(
+			"%v. Pay this invoice in the Hostkey panel (Profile → Billing / Invoices; auto-pay from credit balance is off or funds are insufficient). State kept as %s. After payment, re-run terraform apply — it will wait for this invoice and will not place a new order.",
+			err, id,
+		)
+		return title, detail
+	}
 	if invapi.IsPendingTerminal(err) {
 		title = "Deploy cancelled or failed"
 		detail = fmt.Sprintf(

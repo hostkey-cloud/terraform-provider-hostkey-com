@@ -137,7 +137,7 @@ Same resource and attributes as VPS/dedicated — change **`preset_name`** and p
 - `id` — InvAPI server id. After a Paid order, state may be `pending:<invoice>` until apply links the real id (plan shows an in-place update; apply waits, it does not re-order).
 - `main_ipv4` — primary IPv4 after deploy.
 - `status` — last known status.
-- `invoice` — WHMCS invoice id after Paid.
+- `invoice` — WHMCS invoice id from `order_instance` (present for Paid and Unpaid orders). If status is Unpaid (auto-pay off / insufficient credit), apply exits with Warning **Waiting for invoice payment**, keeps `pending:<invoice>`, and resumes after you pay in the panel — it does not re-order.
 
 ## Import
 

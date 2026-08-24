@@ -18,21 +18,9 @@ First release of the **COM-only** provider. GoReleaser tag: **`v0.2.0`**. Regist
 - **`base_url`** may still override staging/`localhost` on `*.hostkey.com`. Hosts on `*.hostkey.ru` are rejected with a pointer to `hostkey-ru`.
 - **Go module** is `github.com/hostkey-cloud/terraform-provider-hostkey-com`. Binary / User-Agent: `terraform-provider-hostkey-com`.
 
-**Migrate from `hostkey-cloud/hostkey`:**
+### Fixed
 
-```hcl
-source  = "hostkey-cloud/hostkey-com"
-version = "~> 0.2"
-# drop provider region
-```
-
-```bash
-terraform state replace-provider \
-  'registry.terraform.io/hostkey-cloud/hostkey' \
-  'registry.terraform.io/hostkey-cloud/hostkey-com'
-```
-
-Then `terraform init -upgrade`.
+- `hostkey_server`: when `order_instance` returns an **Unpaid** invoice (auto-pay off or insufficient credit), Create no longer polls until create-timeout with only `Still creating...`. Apply exits immediately with Warning **Waiting for invoice payment**, keeps `pending:<invoice>`, and the next apply resumes after payment (no re-order). Pending wait/Read also detect unpaid invoices via `whmcs/get_invoices`.
 
 ### Changed
 
