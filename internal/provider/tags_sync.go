@@ -9,7 +9,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 
-	"github.com/hostkey-cloud/terraform-provider-hostkey/internal/invapi"
+	"github.com/hostkey-cloud/terraform-provider-hostkey-com/internal/invapi"
 )
 
 func mapStringValues(m types.Map) map[string]string {

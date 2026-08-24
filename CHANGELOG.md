@@ -9,6 +9,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- **Breaking:** this repository is the **COM** provider `hostkey-cloud/hostkey-com` (InvAPI `invapi.hostkey.com` only). The `.ru` portal is [`hostkey-cloud/hostkey-ru`](https://github.com/hostkey-cloud/terraform-provider-hostkey-ru). The old source `hostkey-cloud/hostkey` is deprecated — change `source`, drop `region`, then `terraform state replace-provider`. See [SPLIT.md](SPLIT.md). Next release: **v0.2.0**.
+- Provider attribute `region` removed. Optional `base_url` still overrides staging/localhost; sibling portal hosts (`*.hostkey.ru`) are rejected with a pointer to `hostkey-ru`.
+- Registry docs (`docs/`) and README are English / hostkey.com.
+
 ## [0.1.9] - 2026-08-21
 
 ### Fixed

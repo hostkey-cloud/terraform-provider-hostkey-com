@@ -28,7 +28,7 @@ Useful Make targets: `make test`, `make build`, `make install`, `make lint`, `ma
 ## Tests
 
 - Unit: `go test ./...` or `make test` (does **not** run acceptance tests).
-- Smoke: `HOSTKEY_API_KEY=… go run ./cmd/smoke` (read-only InvAPI).
+- Smoke: `HOSTKEY_API_KEY=… go run ./cmd/smoke` (read-only InvAPI, this fork → `invapi.hostkey.com`).
 - Acceptance (billed, production InvAPI):
 
 ```bash

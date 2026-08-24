@@ -24,7 +24,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 
-	"github.com/hostkey-cloud/terraform-provider-hostkey/internal/invapi"
+	"github.com/hostkey-cloud/terraform-provider-hostkey-com/internal/invapi"
 )
 
 var (
@@ -164,7 +164,7 @@ func (r *serverResource) Schema(ctx context.Context, _ resource.SchemaRequest, r
 				},
 			},
 			"location_name": schema.StringAttribute{
-				Description: "DC location code: NL, US, FI, DE, RU, etc. (not the same as provider region COM/RU).",
+				Description: "DC location code: NL, US, FI, DE, RU, etc. (not the InvAPI portal; this provider always uses invapi.hostkey.com).",
 				Required:    true,
 				PlanModifiers: []planmodifier.String{
 					requiresReplaceOnKnownStringChange(),
@@ -472,7 +472,7 @@ func (r *serverResource) ModifyPlan(ctx context.Context, req resource.ModifyPlan
 	if r.client == nil {
 		resp.Diagnostics.AddError(
 			"Provider not configured",
-			"Configure the hostkey provider (api_key, region) before planning hostkey_server changes.",
+			"Configure the hostkey provider (api_key) before planning hostkey_server changes.",
 		)
 		return
 	}

@@ -6,9 +6,11 @@ import (
 )
 
 func TestValidateBaseURL(t *testing.T) {
+	ownHTTPS := strings.TrimSuffix(DefaultBaseURL, "/")
+	sibHTTPS := "https://" + SiblingAPIHostHint + "/"
 	for _, u := range []string{
-		"https://invapi.hostkey.com/",
-		"https://invapi.hostkey.ru",
+		ownHTTPS,
+		sibHTTPS, // scheme check only — portal filter is ValidateConfiguredBaseURL
 		"http://127.0.0.1:8080/",
 		"http://localhost/invapi/",
 	} {
@@ -16,12 +18,13 @@ func TestValidateBaseURL(t *testing.T) {
 			t.Fatalf("%q: %v", u, err)
 		}
 	}
+	ownHTTP := "http://" + strings.TrimPrefix(strings.TrimSuffix(DefaultBaseURL, "/"), "https://") + "/"
 	for _, bad := range []string{
 		"",
 		"ftp://x",
 		"not-a-url",
 		"https://",
-		"http://invapi.hostkey.com/",
+		ownHTTP,
 		"http://evil.example/",
 	} {
 		if err := ValidateBaseURL(bad); err == nil {
@@ -30,28 +33,60 @@ func TestValidateBaseURL(t *testing.T) {
 	}
 }
 
+func TestValidateConfiguredBaseURL(t *testing.T) {
+	if err := ValidateConfiguredBaseURL(DefaultBaseURL); err != nil {
+		t.Fatalf("own portal: %v", err)
+	}
+	if err := ValidateConfiguredBaseURL("http://127.0.0.1:8080/"); err != nil {
+		t.Fatalf("loopback: %v", err)
+	}
+	sib := "https://" + SiblingAPIHostHint + "/"
+	err := ValidateConfiguredBaseURL(sib)
+	if err == nil {
+		t.Fatal("expected reject sibling portal")
+	}
+	if !strings.Contains(err.Error(), SiblingProviderSource) {
+		t.Fatalf("sibling error should mention %s: %v", SiblingProviderSource, err)
+	}
+	if err := ValidateConfiguredBaseURL("https://evil.example/"); err == nil {
+		t.Fatal("expected reject unrelated host")
+	}
+}
+
 func TestAllowedInvAPIRewrite(t *testing.T) {
-	cur := "https://invapi.hostkey.com/"
-	ok, err := CanonicalInvAPIBaseURL("invapi.hostkey.ru")
+	cur := DefaultBaseURL
+	host := strings.TrimPrefix(strings.TrimSuffix(DefaultBaseURL, "/"), "https://")
+	ok, err := CanonicalInvAPIBaseURL(host)
 	if err != nil {
 		t.Fatal(err)
 	}
 	if err := allowedInvAPIRewrite(cur, ok); err != nil {
-		t.Fatalf("hostkey.ru rewrite: %v", err)
+		t.Fatalf("own portal rewrite: %v", err)
 	}
 	if err := allowedInvAPIRewrite(cur, "https://evil.example/"); err == nil {
 		t.Fatal("expected reject attacker host")
 	}
-	if err := allowedInvAPIRewrite(cur, "http://invapi.hostkey.com/"); err == nil {
+	sib, err := CanonicalInvAPIBaseURL(SiblingAPIHostHint)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := allowedInvAPIRewrite(cur, sib); err == nil {
+		t.Fatal("expected reject sibling portal rewrite")
+	}
+	if err := allowedInvAPIRewrite(cur, "http://"+host+"/"); err == nil {
 		t.Fatal("expected reject TLS downgrade")
 	}
 }
 
 func TestIsHostkeyAPIHost(t *testing.T) {
-	if !isHostkeyAPIHost("invapi.hostkey.com") || !isHostkeyAPIHost("INVAPI.HOSTKEY.RU") {
-		t.Fatal("expected hostkey hosts")
+	host := strings.TrimPrefix(strings.TrimSuffix(DefaultBaseURL, "/"), "https://")
+	if !isHostkeyAPIHost(host) || !isHostkeyAPIHost(strings.ToUpper(host)) {
+		t.Fatal("expected own portal hosts")
 	}
-	if isHostkeyAPIHost("hostkey.com.evil.example") || isHostkeyAPIHost("example.com") {
+	if isHostkeyAPIHost(SiblingAPIHostHint) {
+		t.Fatal("sibling portal must not match isHostkeyAPIHost")
+	}
+	if isHostkeyAPIHost(PortalDomain+".evil.example") || isHostkeyAPIHost("example.com") {
 		t.Fatal("expected reject lookalike")
 	}
 }

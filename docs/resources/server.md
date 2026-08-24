@@ -7,7 +7,7 @@ description: |-
 
 # hostkey_server (Resource)
 
-Orders a server with [`eq/order_instance`](https://hostkey.com/documentation/apidocs/eq/#order_instance) ([RU](https://hostkey.ru/documentation/apidocs/eq/#order_instance)), waits for deploy, manages hostname, tags, power, reboot and reinstall. Destroy calls `whmcs/request_cancellation`.
+Orders a server with [`eq/order_instance`](https://hostkey.com/documentation/apidocs/eq/#order_instance), waits for deploy, manages hostname, tags, power, reboot and reinstall. Destroy calls `whmcs/request_cancellation`.
 
 One resource covers the whole catalog. There is no separate GPU/VDS type:
 
@@ -106,7 +106,7 @@ Same resource and attributes as VPS/dedicated — change **`preset_name`** and p
 
 ### Required
 
-- `location_name` (String) Data-center code (`NL`, `US`, `FI`, `DE`, `RU`, …). Not the same as provider `region`.
+- `location_name` (String) Data-center code (`NL`, `US`, `FI`, `DE`, `RU`, …). This provider always uses `invapi.hostkey.com` (not the `.ru` portal).
 - `root_pass` (String, Sensitive) Root password (8–30 chars: upper, lower, digit, and one of `% - _ +`; no `@`/`#`). Change triggers reinstall.
 
 ### Optional
@@ -163,4 +163,4 @@ To avoid surprise drift, either:
 - If the Paid order is **cancelled or fails** in the Hostkey panel / InvAPI while Terraform is still waiting, apply stops early with Warning **«Deploy cancelled or failed»** (not «still in progress»). State remains `pending:<invoice>` so you can `terraform destroy` to drop tracking; the next apply fail-fasts with the same warning and does not re-order.
 - While waiting, set `TF_LOG=INFO` to see InvAPI status hints on each poll. Terraform CLI itself always prints a fixed `Still creating... [elapsed]` line and cannot show custom status there.
 - Pending create only resumes this resource's own `pending:<invoice>` — foreign Pending orders are never adopted.
-- RAID / disk layout: [Hostkey RAID docs](https://hostkey.com/documentation/technical/exist_server_using/raid_create/) ([RU](https://hostkey.ru/documentation/technical/exist_server_using/raid_create/)).
+- RAID / disk layout: [Hostkey RAID docs](https://hostkey.com/documentation/technical/exist_server_using/raid_create/).

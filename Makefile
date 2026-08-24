@@ -5,7 +5,7 @@ ARCH=$(shell go env GOHOSTARCH)
 VERSION?=dev
 
 build:
-	go build -ldflags "-X main.version=$(VERSION)" -o terraform-provider-hostkey .
+	go build -ldflags "-X main.version=$(VERSION)" -o terraform-provider-hostkey-com .
 
 install:
 	go install -ldflags "-X main.version=$(VERSION)"

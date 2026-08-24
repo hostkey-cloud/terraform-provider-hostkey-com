@@ -67,6 +67,33 @@ func CanonicalInvAPIBaseURL(raw string) (string, error) {
 	return raw, nil
 }
 
+// ValidateConfiguredBaseURL is ValidateBaseURL plus this fork's portal allowlist
+// (own TLD or localhost). The sibling portal is rejected with a pointer to the
+// other Terraform provider.
+func ValidateConfiguredBaseURL(s string) error {
+	s = strings.TrimSpace(s)
+	if s == "" {
+		return fmt.Errorf("must not be empty")
+	}
+	if err := ValidateBaseURL(s); err != nil {
+		return err
+	}
+	u, err := url.Parse(s)
+	if err != nil {
+		return err
+	}
+	if isLoopbackHost(u.Host) {
+		return nil
+	}
+	if isSiblingPortalHost(u.Host) {
+		return fmt.Errorf("InvAPI host %q belongs to the other Hostkey portal; use Terraform provider %s (default %s)", u.Host, SiblingProviderSource, SiblingAPIHostHint)
+	}
+	if !isHostkeyAPIHost(u.Host) {
+		return fmt.Errorf("InvAPI host %q is not a %s InvAPI endpoint (allowed: *.%s or localhost)", u.Host, PortalDomain, PortalDomain)
+	}
+	return nil
+}
+
 func allowedInvAPIRewrite(current, next string) error {
 	cur, err := url.Parse(current)
 	if err != nil {
@@ -85,17 +112,28 @@ func allowedInvAPIRewrite(current, next string) error {
 	return fmt.Errorf("login invapi host %q is not a Hostkey InvAPI endpoint", nxt.Host)
 }
 
-func isHostkeyAPIHost(host string) bool {
+func hostnameOnly(host string) string {
 	h, _, err := net.SplitHostPort(host)
 	if err != nil {
 		h = host
 	}
-	h = strings.ToLower(strings.TrimSuffix(h, "."))
-	switch h {
-	case "hostkey.com", "hostkey.ru":
+	return strings.ToLower(strings.TrimSuffix(h, "."))
+}
+
+func isHostkeyAPIHost(host string) bool {
+	h := hostnameOnly(host)
+	if h == PortalDomain {
 		return true
 	}
-	return strings.HasSuffix(h, ".hostkey.com") || strings.HasSuffix(h, ".hostkey.ru")
+	return strings.HasSuffix(h, "."+PortalDomain)
+}
+
+func isSiblingPortalHost(host string) bool {
+	h := hostnameOnly(host)
+	if h == SiblingPortalDomain {
+		return true
+	}
+	return strings.HasSuffix(h, "."+SiblingPortalDomain)
 }
 
 func sameURLHost(a, b *url.URL) bool {

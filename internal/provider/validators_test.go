@@ -1,7 +1,10 @@
 package provider
 
 import (
+	"strings"
 	"testing"
+
+	"github.com/hostkey-cloud/terraform-provider-hostkey-com/internal/invapi"
 )
 
 func TestValidateIPv4(t *testing.T) {
@@ -35,12 +38,15 @@ func TestValidateSSHPublicKey(t *testing.T) {
 }
 
 func TestValidateInvapiBaseURL(t *testing.T) {
-	for _, u := range []string{"", "https://invapi.hostkey.com/", "https://invapi.hostkey.ru", "http://127.0.0.1:9/"} {
+	own := strings.TrimSuffix(invapi.DefaultBaseURL, "/")
+	for _, u := range []string{"", own, "http://127.0.0.1:9/"} {
 		if err := validateInvapiBaseURL(u); err != nil {
 			t.Fatalf("%q: %v", u, err)
 		}
 	}
-	for _, bad := range []string{"ftp://x", "not-a-url", "https://", "http://invapi.hostkey.com/"} {
+	sibHTTP := "http://" + invapi.SiblingAPIHostHint + "/"
+	sibHTTPS := "https://" + invapi.SiblingAPIHostHint + "/"
+	for _, bad := range []string{"ftp://x", "not-a-url", "https://", sibHTTP, sibHTTPS} {
 		if err := validateInvapiBaseURL(bad); err == nil {
 			t.Fatalf("expected error for %q", bad)
 		}

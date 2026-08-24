@@ -1,29 +1,26 @@
+# Minimal paid apply — one file (vm.pico, NL).
+#
+#   export HOSTKEY_API_KEY="…"
+#   cp terraform.tfvars.example terraform.tfvars   # set root_pass
+#   terraform init && terraform apply
+#
+# Destroy: terraform destroy
+
 terraform {
   required_providers {
     hostkey = {
-      source  = "hostkey-cloud/hostkey"
-      version = "~> 0.1"
+      source  = "hostkey-cloud/hostkey-com"
+      version = "~> 0.2"
     }
   }
   required_version = ">= 1.0"
 }
 
-provider "hostkey" {
-  region = var.hostkey_region
-}
-
-variable "hostkey_region" {
-  type    = string
-  default = "RU"
-}
+provider "hostkey" {}
 
 variable "root_pass" {
   type      = string
   sensitive = true
-}
-
-data "hostkey_presets" "all" {
-  location = "NL"
 }
 
 resource "hostkey_server" "web" {
@@ -35,10 +32,6 @@ resource "hostkey_server" "web" {
   root_pass         = var.root_pass
   power_state       = "on"
   cancellation_type = 1
-
-  tags = {
-    env = "example"
-  }
 
   timeouts {
     create = "90m"
@@ -52,8 +45,4 @@ output "server_id" {
 
 output "main_ipv4" {
   value = hostkey_server.web.main_ipv4
-}
-
-output "preset_count" {
-  value = length(data.hostkey_presets.all.presets)
 }

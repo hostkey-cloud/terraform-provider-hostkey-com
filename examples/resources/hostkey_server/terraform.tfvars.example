@@ -1,7 +1,6 @@
 hostkey_api_key = "paste-invapi-key-here"
 root_pass       = "StrongPass1%"
 
-# hostkey_region      = "RU"
 # location_name       = "NL"
 # preset_name         = "vm.pico"
 # os_name             = "Ubuntu 22.04"

@@ -14,7 +14,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 
-	"github.com/hostkey-cloud/terraform-provider-hostkey/internal/invapi"
+	"github.com/hostkey-cloud/terraform-provider-hostkey-com/internal/invapi"
 )
 
 const (
@@ -32,7 +32,6 @@ type hostkeyProvider struct {
 type providerModel struct {
 	APIKey      types.String `tfsdk:"api_key"`
 	BaseURL     types.String `tfsdk:"base_url"`
-	Region      types.String `tfsdk:"region"`
 	TokenTTL    types.Int64  `tfsdk:"token_ttl"`
 	HTTPTimeout types.Int64  `tfsdk:"http_timeout"`
 	MaxRetries  types.Int64  `tfsdk:"max_retries"`
@@ -51,25 +50,18 @@ func (p *hostkeyProvider) Metadata(_ context.Context, _ provider.MetadataRequest
 
 func (p *hostkeyProvider) Schema(_ context.Context, _ provider.SchemaRequest, resp *provider.SchemaResponse) {
 	resp.Schema = schema.Schema{
-		Description: "Interact with Hostkey infrastructure via InvAPI.",
+		Description: "Interact with Hostkey (.com) infrastructure via InvAPI (invapi.hostkey.com).",
 		Attributes: map[string]schema.Attribute{
 			"api_key": schema.StringAttribute{
-				Description: "Account InvAPI API key (InvAPI → Username → API keys). May be set via HOSTKEY_API_KEY or HOSTKEY_API_TOKEN. Docs: https://hostkey.com/documentation/account/api_key_account/",
+				Description: "Account InvAPI API key (InvAPI -> Username -> API keys). May be set via HOSTKEY_API_KEY or HOSTKEY_API_TOKEN. Docs: " + invapi.DocsAPIKeyURL,
 				Optional:    true,
 				Sensitive:   true,
 			},
 			"base_url": schema.StringAttribute{
-				Description: "InvAPI base URL, e.g. https://invapi.hostkey.com/ or https://invapi.hostkey.ru/. HTTPS required except localhost. Overrides region when set. May be set via HOSTKEY_BASE_URL or HOSTKEY_API_URL.",
+				Description: "InvAPI base URL override (default https://invapi.hostkey.com/). HTTPS required except localhost. Staging hosts must be on hostkey.com. May be set via HOSTKEY_BASE_URL or HOSTKEY_API_URL. Use hostkey-cloud/hostkey-ru for invapi.hostkey.ru.",
 				Optional:    true,
 				Validators: []validator.String{
 					invapiBaseURLValidator(),
-				},
-			},
-			"region": schema.StringAttribute{
-				Description: "Region selector when base_url is not set. One of: COM (default), RU.",
-				Optional:    true,
-				Validators: []validator.String{
-					oneOfStrings("region", "COM", "RU"),
 				},
 			},
 			"token_ttl": schema.Int64Attribute{
@@ -122,7 +114,7 @@ func (p *hostkeyProvider) Configure(ctx context.Context, req provider.ConfigureR
 		baseURL = firstEnv(envBaseURL, envAPIURL)
 	}
 	if baseURL == "" {
-		baseURL = invapi.BaseURLForRegion(config.Region.ValueString())
+		baseURL = invapi.DefaultBaseURL
 	}
 	if err := validateInvapiBaseURL(baseURL); err != nil {
 		resp.Diagnostics.AddError("Invalid base_url", err.Error())
@@ -153,7 +145,7 @@ func (p *hostkeyProvider) Configure(ctx context.Context, req provider.ConfigureR
 		BaseURL:     baseURL,
 		HTTPTimeout: httpTimeout,
 		MaxRetries:  maxRetries,
-		UserAgent:   "terraform-provider-hostkey/" + version,
+		UserAgent:   invapi.ProviderBinaryName + "/" + version,
 	}, nil)
 	if err != nil {
 		resp.Diagnostics.AddError("Client init failed", err.Error())

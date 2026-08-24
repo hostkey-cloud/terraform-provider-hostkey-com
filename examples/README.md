@@ -1,17 +1,22 @@
 # Examples
 
+**Apply (paid):** one file — [`basic/main.tf`](basic/main.tf)
+
+```bash
+cd examples/basic
+export HOSTKEY_API_KEY="…"
+cp terraform.tfvars.example terraform.tfvars   # set root_pass
+terraform init && terraform apply
+```
+
 | Path | Purpose |
 |------|---------|
-| [provider](provider/) | Minimal provider block |
-| [basic](basic/) | Server + presets data source (billed apply) |
-| [data-sources/catalog](data-sources/catalog/) | Presets / OS / traffic plans (read-only) |
-| [resources/hostkey_server](resources/hostkey_server/) | Full server example |
-| [resources/hostkey_ssh_key](resources/hostkey_ssh_key/) | SSH key storage |
+| [basic](basic/) | **Simple apply** — one `main.tf` (`vm.pico` NL) |
+| [provider](provider/) | Provider block only |
+| [data-sources/catalog](data-sources/catalog/) | Read-only catalog |
+| [resources/hostkey_server](resources/hostkey_server/) | Fuller server example |
+| [resources/hostkey_ssh_key](resources/hostkey_ssh_key/) | SSH key |
 | [resources/hostkey_dns_domain](resources/hostkey_dns_domain/) | DNS zone |
-| [dev-terraform.rc](dev-terraform.rc) | Local `dev_overrides` template |
+| [dev-terraform.rc](dev-terraform.rc) | Local `dev_overrides` |
 
-Copy `*.tfvars.example` → `terraform.tfvars` (gitignored). Prefer `HOSTKEY_API_KEY` in the environment.
-
-**Registry:** [`hostkey-cloud/hostkey`](https://registry.terraform.io/providers/hostkey-cloud/hostkey/latest) — use `terraform init` as in README.
-
-**Local provider build:** `go install` + `dev_overrides` from [dev-terraform.rc](dev-terraform.rc) — [CONTRIBUTING.md](../CONTRIBUTING.md).
+Registry: [`hostkey-cloud/hostkey-com`](https://registry.terraform.io/providers/hostkey-cloud/hostkey-com/latest). RU: [`hostkey-cloud/hostkey-ru`](https://registry.terraform.io/providers/hostkey-cloud/hostkey-ru/latest). Old `hostkey-cloud/hostkey` is deprecated.

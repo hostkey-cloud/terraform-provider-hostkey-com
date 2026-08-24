@@ -10,7 +10,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 
-	"github.com/hostkey-cloud/terraform-provider-hostkey/internal/invapi"
+	"github.com/hostkey-cloud/terraform-provider-hostkey-com/internal/invapi"
 )
 
 var _ datasource.DataSource = &trafficPlansDataSource{}
@@ -116,7 +116,7 @@ func (d *trafficPlansDataSource) Read(ctx context.Context, req datasource.ReadRe
 		resp.Diagnostics.AddError(
 			"traffic_plans/list failed",
 			err.Error()+"\n\nSpecify location (and optionally instance_id). "+
-				"See docs/data-sources/traffic_plans.md — InvAPI traffic_plans/list: https://hostkey.com/documentation/apidocs/traffic_plans/#traffic_planslist (RU: https://hostkey.ru/documentation/apidocs/traffic_plans/#traffic_planslist)",
+				"See docs/data-sources/traffic_plans.md — InvAPI traffic_plans/list: https://hostkey.com/documentation/apidocs/traffic_plans/#traffic_planslist",
 		)
 		return
 	}

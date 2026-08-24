@@ -8,7 +8,7 @@ import (
 	"os"
 	"strconv"
 
-	"github.com/hostkey-cloud/terraform-provider-hostkey/internal/invapi"
+	"github.com/hostkey-cloud/terraform-provider-hostkey-com/internal/invapi"
 )
 
 // Smoke-test InvAPI without Terraform.
@@ -20,7 +20,6 @@ import (
 //	go run ./cmd/smoke -base-url https://invapi-stage.hostkey.com/
 func main() {
 	var (
-		region   = flag.String("region", "COM", "COM or RU")
 		baseURL  = flag.String("base-url", "", "InvAPI base URL override")
 		presetID = flag.Int("preset", 0, "presets/show id")
 		serverID = flag.Int("server", 0, "eq/show id")
@@ -38,7 +37,7 @@ func main() {
 		urlBase = os.Getenv("HOSTKEY_BASE_URL")
 	}
 	if urlBase == "" {
-		urlBase = invapi.BaseURLForRegion(*region)
+		urlBase = invapi.DefaultBaseURL
 	}
 
 	ctx := context.Background()

@@ -1,16 +1,10 @@
 hostkey_api_key = "replace-me"
 root_pass       = "StrongPass1%"
 
-# Keep region RU for this test account.
-hostkey_region = "RU"
+# Unique hostname helps pending-create correlation.
+hostname = "tf-pending-recheck"
 
-# Use a unique hostname for every fresh order so fallback-by-hostname
-# can distinguish your server from other concurrent creates.
-hostname = "tf-pending-16887-recheck"
-
-# RU vm.pico test values used during local verification.
-location_name   = "RU"
+location_name   = "NL"
 preset_name     = "vm.pico"
 os_name         = "Ubuntu 22.04"
-traffic_plan_id = 8
-
+traffic_plan_id = 25

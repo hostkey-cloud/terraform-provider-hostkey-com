@@ -16,9 +16,7 @@ import (
 )
 
 const (
-	DefaultBaseURLCOM = "https://invapi.hostkey.com/"
-	DefaultBaseURLRU  = "https://invapi.hostkey.ru/"
-	defaultUserAgent  = "terraform-provider-hostkey/dev"
+	defaultUserAgent = ProviderBinaryName + "/dev"
 
 	// maxResponseBodyBytes caps how much of an InvAPI response body the client
 	// buffers into memory. InvAPI responses are small JSON documents; without a
@@ -65,7 +63,7 @@ type Client struct {
 func NewClient(cfg Config, auth *TokenManager) (*Client, error) {
 	base := strings.TrimSuffix(cfg.BaseURL, "/") + "/"
 	if base == "/" {
-		base = DefaultBaseURLCOM
+		base = DefaultBaseURL
 	}
 
 	httpClient := cfg.HTTPClient
@@ -113,13 +111,11 @@ func defaultHTTPClient(timeout time.Duration) *http.Client {
 	return &http.Client{Timeout: timeout, Transport: transport, CheckRedirect: sameOriginRedirect}
 }
 
+// BaseURLForRegion is kept for smoke/tools that still pass a flag; this fork
+// always returns the portal default (region is not a provider attribute).
 func BaseURLForRegion(region string) string {
-	switch strings.ToUpper(strings.TrimSpace(region)) {
-	case "RU":
-		return DefaultBaseURLRU
-	default:
-		return DefaultBaseURLCOM
-	}
+	_ = region
+	return DefaultBaseURL
 }
 
 func (c *Client) SetAuth(auth *TokenManager) {

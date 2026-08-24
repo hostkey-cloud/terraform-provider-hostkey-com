@@ -1,5 +1,2 @@
-# Copy to terraform.tfvars (gitignored).
-# Prefer setting HOSTKEY_API_KEY in the environment instead of putting the key here.
-
-root_pass = "ChangeMe1%"
-# hostkey_region = "RU"
+# Copy to terraform.tfvars (gitignored). Do not commit secrets.
+root_pass = "StrongPass1%"

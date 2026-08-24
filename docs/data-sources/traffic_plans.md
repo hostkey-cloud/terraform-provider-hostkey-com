@@ -7,7 +7,7 @@ description: |-
 
 # hostkey_traffic_plans (Data Source)
 
-Lists traffic plans ([`traffic_plans/list`](https://hostkey.com/documentation/apidocs/traffic_plans/#traffic_planslist) · [RU](https://hostkey.ru/documentation/apidocs/traffic_plans/#traffic_planslist)). InvAPI often requires `location`. The provider requests this list **without** a customer session token (sending a token frequently breaks the call).
+Lists traffic plans ([`traffic_plans/list`](https://hostkey.com/documentation/apidocs/traffic_plans/#traffic_planslist)). InvAPI often requires `location`. The provider requests this list **without** a customer session token (sending a token frequently breaks the call).
 
 VPS and dedicated presets use **different** plan names. Examples (exact strings change — always check the list):
 
@@ -21,7 +21,7 @@ VPS and dedicated presets use **different** plan names. Examples (exact strings 
 
 Promo dedic is **`bm.v2-promo`** (not `v2-promo`). Pass `instance_id` (preset id) to list compatible plans. When two rows share a name, prefer a price hint or `traffic_plan_id`.
 
-InvAPI: [`traffic_plans/list`](https://hostkey.com/documentation/apidocs/traffic_plans/#traffic_planslist) · [RU](https://hostkey.ru/documentation/apidocs/traffic_plans/#traffic_planslist).
+InvAPI: [`traffic_plans/list`](https://hostkey.com/documentation/apidocs/traffic_plans/#traffic_planslist).
 
 ```hcl
 data "hostkey_traffic_plans" "nl" {

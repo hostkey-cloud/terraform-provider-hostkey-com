@@ -1,4 +1,4 @@
-module github.com/hostkey-cloud/terraform-provider-hostkey
+module github.com/hostkey-cloud/terraform-provider-hostkey-com
 
 go 1.26.6
 

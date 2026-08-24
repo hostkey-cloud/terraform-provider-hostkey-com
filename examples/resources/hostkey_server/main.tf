@@ -1,24 +1,18 @@
 terraform {
   required_providers {
     hostkey = {
-      source = "registry.terraform.io/hostkey-cloud/hostkey"
+      source = "registry.terraform.io/hostkey-cloud/hostkey-com"
     }
   }
 }
 
 provider "hostkey" {
   api_key = var.hostkey_api_key
-  region  = var.hostkey_region
 }
 
 variable "hostkey_api_key" {
   type      = string
   sensitive = true
-}
-
-variable "hostkey_region" {
-  type    = string
-  default = "RU"
 }
 
 variable "location_name" {

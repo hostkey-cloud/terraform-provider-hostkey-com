@@ -1,13 +1,12 @@
 terraform {
   required_providers {
     hostkey = {
-      source = "registry.terraform.io/hostkey-cloud/hostkey"
+      source = "registry.terraform.io/hostkey-cloud/hostkey-com"
     }
   }
 }
 
 provider "hostkey" {
-  region = "RU"
 }
 
 variable "ssh_public_key" {

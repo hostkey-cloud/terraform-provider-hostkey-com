@@ -9,7 +9,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 
-	"github.com/hostkey-cloud/terraform-provider-hostkey/internal/invapi"
+	"github.com/hostkey-cloud/terraform-provider-hostkey-com/internal/invapi"
 )
 
 const (
@@ -290,7 +290,7 @@ func validateInvapiBaseURL(s string) error {
 	if s == "" {
 		return nil
 	}
-	return invapi.ValidateBaseURL(s)
+	return invapi.ValidateConfiguredBaseURL(s)
 }
 
 func validateSSHPublicKey(s string) error {

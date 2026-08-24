@@ -42,7 +42,6 @@ func TestAccSSHKey_basic(t *testing.T) {
 func testAccSSHKeyConfig(name, pub string) string {
 	return fmt.Sprintf(`
 provider "hostkey" {
-  region = "RU"
 }
 
 resource "hostkey_ssh_key" "test" {
@@ -105,7 +104,6 @@ func TestAccServer_basic(t *testing.T) {
 func testAccServerConfig(location, preset, rootPass string) string {
 	return fmt.Sprintf(`
 provider "hostkey" {
-  region = "RU"
 }
 
 resource "hostkey_server" "test" {
@@ -160,7 +158,6 @@ func TestAccServer_bareMetal(t *testing.T) {
 func testAccServerBareMetalConfig(rootPass string) string {
 	return fmt.Sprintf(`
 provider "hostkey" {
-  region = "RU"
 }
 
 resource "hostkey_server" "test" {
@@ -206,7 +203,6 @@ func TestAccDNSDomain_basic(t *testing.T) {
 			{
 				Config: fmt.Sprintf(`
 provider "hostkey" {
-  region = "RU"
 }
 
 resource "hostkey_dns_domain" "test" {
@@ -261,7 +257,6 @@ func TestAccServerIP_basic(t *testing.T) {
 func testAccServerIPConfig(serverID string) string {
 	return fmt.Sprintf(`
 provider "hostkey" {
-  region = "RU"
 }
 
 resource "hostkey_server_ip" "test" {
@@ -307,7 +302,6 @@ func TestAccDNSRecord_basic(t *testing.T) {
 func testAccDNSRecordConfig(zone, name, typ, content string, ttl int) string {
 	return fmt.Sprintf(`
 provider "hostkey" {
-  region = "RU"
 }
 
 resource "hostkey_dns_record" "test" {

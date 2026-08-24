@@ -202,7 +202,7 @@ func (c *Client) TrafficPlansList(ctx context.Context, filter TrafficPlansListFi
 	}
 	// InvAPI quirk: traffic_plans/list works in public mode (no token).
 	// Sending a Customer session token often returns "invalid request".
-	// Docs: https://hostkey.com/documentation/apidocs/traffic_plans/#traffic_planslist (RU: https://hostkey.ru/documentation/apidocs/traffic_plans/#traffic_planslist)
+	// Docs: https://hostkey.com/documentation/apidocs/traffic_plans/#traffic_planslist
 	body, err := c.PostFormWithoutAuth(ctx, "traffic_plans", params)
 	if err != nil {
 		return nil, fmt.Errorf("traffic_plans/list: %w", err)
