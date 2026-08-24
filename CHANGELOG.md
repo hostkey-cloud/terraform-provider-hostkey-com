@@ -7,11 +7,41 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.2.0] - 2026-08-24
+
+First release of the **COM-only** provider. GoReleaser tag: **`v0.2.0`**. Registry: [`hostkey-cloud/hostkey-com`](https://registry.terraform.io/providers/hostkey-cloud/hostkey-com/latest). Sibling: [`hostkey-cloud/hostkey-ru`](https://registry.terraform.io/providers/hostkey-cloud/hostkey-ru/latest). Split checklist: [SPLIT.md](SPLIT.md).
+
+### Breaking
+
+- **New Registry source.** Install `hostkey-cloud/hostkey-com` (this repo). The combined source `hostkey-cloud/hostkey` is deprecated and will not receive 0.2.x.
+- **Provider `region` removed.** Each provider talks to one InvAPI portal. This one is always `https://invapi.hostkey.com/`. For `invapi.hostkey.ru` use `hostkey-cloud/hostkey-ru`.
+- **`base_url`** may still override staging/`localhost` on `*.hostkey.com`. Hosts on `*.hostkey.ru` are rejected with a pointer to `hostkey-ru`.
+- **Go module** is `github.com/hostkey-cloud/terraform-provider-hostkey-com`. Binary / User-Agent: `terraform-provider-hostkey-com`.
+
+**Migrate from `hostkey-cloud/hostkey`:**
+
+```hcl
+source  = "hostkey-cloud/hostkey-com"
+version = "~> 0.2"
+# drop provider region
+```
+
+```bash
+terraform state replace-provider \
+  'registry.terraform.io/hostkey-cloud/hostkey' \
+  'registry.terraform.io/hostkey-cloud/hostkey-com'
+```
+
+Then `terraform init -upgrade`.
+
 ### Changed
 
-- **Breaking:** this repository is the **COM** provider `hostkey-cloud/hostkey-com` (InvAPI `invapi.hostkey.com` only). The `.ru` portal is [`hostkey-cloud/hostkey-ru`](https://github.com/hostkey-cloud/terraform-provider-hostkey-ru). The old source `hostkey-cloud/hostkey` is deprecated — change `source`, drop `region`, then `terraform state replace-provider`. See [SPLIT.md](SPLIT.md). Next release: **v0.2.0**.
-- Provider attribute `region` removed. Optional `base_url` still overrides staging/localhost; sibling portal hosts (`*.hostkey.ru`) are rejected with a pointer to `hostkey-ru`.
-- Registry docs (`docs/`) and README are English / hostkey.com.
+- Registry docs (`docs/`) and README are English / [hostkey.com](https://hostkey.com).
+- `examples/basic/main.tf` is a single-file paid apply (`vm.pico` NL): empty `provider "hostkey" {}`, API key from `HOSTKEY_API_KEY`, only `root_pass` in tfvars.
+
+### Added
+
+- [`internal/invapi/portal.go`](internal/invapi/portal.go): portal default URL, TLD allowlist, sibling-provider error strings.
 
 ## [0.1.9] - 2026-08-21
 

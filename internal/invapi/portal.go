@@ -7,6 +7,6 @@ const (
 	SiblingPortalDomain   = "hostkey.ru"
 	SiblingProviderSource = "hostkey-cloud/hostkey-ru"
 	SiblingAPIHostHint    = "invapi.hostkey.ru"
-	DocsAPIKeyURL         = "https://hostkey.com/documentation/account/api_key_account/"
+	DocsAccountKeysURL    = "https://hostkey.com/documentation/account/api_key_account/"
 	ProviderBinaryName    = "terraform-provider-hostkey-com"
 )

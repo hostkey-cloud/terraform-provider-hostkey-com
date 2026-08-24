@@ -53,7 +53,7 @@ func (p *hostkeyProvider) Schema(_ context.Context, _ provider.SchemaRequest, re
 		Description: "Interact with Hostkey (.com) infrastructure via InvAPI (invapi.hostkey.com).",
 		Attributes: map[string]schema.Attribute{
 			"api_key": schema.StringAttribute{
-				Description: "Account InvAPI API key (InvAPI -> Username -> API keys). May be set via HOSTKEY_API_KEY or HOSTKEY_API_TOKEN. Docs: " + invapi.DocsAPIKeyURL,
+				Description: "Account InvAPI API key (InvAPI -> Username -> API keys). May be set via HOSTKEY_API_KEY or HOSTKEY_API_TOKEN. Docs: " + invapi.DocsAccountKeysURL,
 				Optional:    true,
 				Sensitive:   true,
 			},
