@@ -7,14 +7,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
 ## [0.2.0] - 2026-08-24
 
-First release of the **COM-only** provider. GoReleaser tag: **`v0.2.0`**. Registry: [`hostkey-cloud/hostkey-com`](https://registry.terraform.io/providers/hostkey-cloud/hostkey-com/latest). Sibling: [`hostkey-cloud/hostkey-ru`](https://registry.terraform.io/providers/hostkey-cloud/hostkey-ru/latest). Split checklist: [SPLIT.md](SPLIT.md).
+- Sibling RU provider namespace is **`hostkey-cloud-ru/hostkey-ru`** (GitHub `hostkey-cloud-ru/terraform-provider-hostkey-ru`). This COM provider remains `hostkey-cloud/hostkey-com`.
+
+First release of the **COM-only** provider. GoReleaser tag: **`v0.2.0`**. Registry: [`hostkey-cloud/hostkey-com`](https://registry.terraform.io/providers/hostkey-cloud/hostkey-com/latest). Sibling: [`hostkey-cloud-ru/hostkey-ru`](https://registry.terraform.io/providers/hostkey-cloud-ru/hostkey-ru/latest). Split checklist: [SPLIT.md](SPLIT.md).
 
 ### Breaking
 
 - **New Registry source.** Install `hostkey-cloud/hostkey-com` (this repo). The combined source `hostkey-cloud/hostkey` is deprecated and will not receive 0.2.x.
-- **Provider `region` removed.** Each provider talks to one InvAPI portal. This one is always `https://invapi.hostkey.com/`. For `invapi.hostkey.ru` use `hostkey-cloud/hostkey-ru`.
+- **Provider `region` removed.** Each provider talks to one InvAPI portal. This one is always `https://invapi.hostkey.com/`. For `invapi.hostkey.ru` use `hostkey-cloud-ru/hostkey-ru`.
 - **`base_url`** may still override staging/`localhost` on `*.hostkey.com`. Hosts on `*.hostkey.ru` are rejected with a pointer to `hostkey-ru`.
 - **Go module** is `github.com/hostkey-cloud/terraform-provider-hostkey-com`. Binary / User-Agent: `terraform-provider-hostkey-com`.
 

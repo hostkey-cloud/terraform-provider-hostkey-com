@@ -10,7 +10,7 @@ terraform {
 
 provider "hostkey" {
   # Prefer env: HOSTKEY_API_KEY (or HOSTKEY_API_TOKEN)
-  # Endpoint is invapi.hostkey.com (use hostkey-cloud/hostkey-ru for .ru).
+  # Endpoint is invapi.hostkey.com (use hostkey-cloud-ru/hostkey-ru for .ru).
 
   # Optional knobs:
   # http_timeout = 60

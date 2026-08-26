@@ -19,4 +19,4 @@ terraform init && terraform apply
 | [resources/hostkey_dns_domain](resources/hostkey_dns_domain/) | DNS zone |
 | [dev-terraform.rc](dev-terraform.rc) | Local `dev_overrides` |
 
-Registry: [`hostkey-cloud/hostkey-com`](https://registry.terraform.io/providers/hostkey-cloud/hostkey-com/latest). RU: [`hostkey-cloud/hostkey-ru`](https://registry.terraform.io/providers/hostkey-cloud/hostkey-ru/latest). Old `hostkey-cloud/hostkey` is deprecated.
+Registry: [`hostkey-cloud/hostkey-com`](https://registry.terraform.io/providers/hostkey-cloud/hostkey-com/latest). RU: [`hostkey-cloud-ru/hostkey-ru`](https://registry.terraform.io/providers/hostkey-cloud-ru/hostkey-ru/latest). Old `hostkey-cloud/hostkey` is deprecated.

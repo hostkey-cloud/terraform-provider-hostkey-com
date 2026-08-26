@@ -58,7 +58,7 @@ func (p *hostkeyProvider) Schema(_ context.Context, _ provider.SchemaRequest, re
 				Sensitive:   true,
 			},
 			"base_url": schema.StringAttribute{
-				Description: "InvAPI base URL override (default https://invapi.hostkey.com/). HTTPS required except localhost. Staging hosts must be on hostkey.com. May be set via HOSTKEY_BASE_URL or HOSTKEY_API_URL. Use hostkey-cloud/hostkey-ru for invapi.hostkey.ru.",
+				Description: "InvAPI base URL override (default https://invapi.hostkey.com/). HTTPS required except localhost. Staging hosts must be on hostkey.com. May be set via HOSTKEY_BASE_URL or HOSTKEY_API_URL. Use hostkey-cloud-ru/hostkey-ru for invapi.hostkey.ru.",
 				Optional:    true,
 				Validators: []validator.String{
 					invapiBaseURLValidator(),
