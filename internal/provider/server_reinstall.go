@@ -116,17 +116,24 @@ func rootPassChanged(plan, state types.String) bool {
 
 func buildReinstallRequest(plan serverModel, serverID int) invapi.OrderInstanceRequest {
 	// Reinstall is eq/order_instance with id=<server> and no preset. Do not
-	// forward create-only billing/network fields (location, traffic, extra IPv4, VLAN, IPv6).
+	// forward create-only billing/network fields (traffic, extra IPv4, VLAN, IPv6).
+	// location_name is required by InvAPI for OS compatibility checks on reinstall.
 	req := invapi.OrderInstanceRequest{
 		ServerID: serverID,
 		RootPass: plan.RootPass.ValueString(),
 		OwnOS:    !plan.OwnOS.IsNull() && plan.OwnOS.ValueBool(),
+	}
+	if !plan.LocationName.IsNull() {
+		req.LocationName = strings.TrimSpace(plan.LocationName.ValueString())
 	}
 	if !plan.OSID.IsNull() {
 		req.OSID = int(plan.OSID.ValueInt64())
 	}
 	if !plan.SoftID.IsNull() {
 		req.SoftID = int(plan.SoftID.ValueInt64())
+	}
+	if !plan.Hostname.IsNull() && plan.Hostname.ValueString() != "" {
+		req.Hostname = strings.TrimSpace(plan.Hostname.ValueString())
 	}
 	if !plan.SSHKey.IsNull() {
 		req.SSHKey = plan.SSHKey.ValueString()

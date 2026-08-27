@@ -448,9 +448,27 @@ func (c *Client) WaitForPendingServer(ctx context.Context, invoice int, callback
 	var lastErr error
 	resolvedCallback = strings.TrimSpace(callback)
 
+	// Unpaid invoice: wait for payment inside this apply (same create timeout
+	// budget), then continue deploy correlation. Only enter the payment wait
+	// when WHMCS clearly reports unpaid — missing/failed get_invoices must not
+	// block deploy polling (Paid orders and unit tests without a WHMCS mock).
 	if invoice > 0 {
 		if payStatus, payErr := c.WHMCSInvoicePaymentStatus(ctx, invoice); payErr == nil && OrderAwaitsPayment(payStatus) {
-			return 0, resolvedCallback, &PendingPaymentError{Invoice: invoice, Status: payStatus}
+			payOpts := WaitOptions{
+				PollInterval: interval,
+				Timeout:      time.Until(deadline),
+				OnPoll: func(status string) {
+					if opts.OnPoll != nil {
+						opts.OnPoll("invoice payment: " + status)
+					}
+				},
+			}
+			if payOpts.Timeout <= 0 {
+				payOpts.Timeout = timeout
+			}
+			if waitPayErr := c.WaitForInvoicePayment(ctx, invoice, payOpts); waitPayErr != nil {
+				return 0, resolvedCallback, waitPayErr
+			}
 		}
 	}
 

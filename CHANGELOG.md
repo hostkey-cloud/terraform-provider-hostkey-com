@@ -7,7 +7,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.2.1] - 2026-08-27
+
+### Fixed
+
+- `hostkey_server` reinstall: send `hostname` and `location_name` on `eq/order_instance` (InvAPI needs location for OS compatibility; hostname was omitted so reinstall could never apply the planned name even at InvAPI/tags level during wipe). Guest OS hostname remains a separate InvAPI/OpenStack channel — live reinstall still showed OS names like server id / `*.example.fi` / preset-like `vm-pico` while tags matched HCL (`fence_openstack_in` receives `hostname` but `cloud_init_script` is null unless set separately).
+- `eq_callback/check`: treat InvAPI `result=Not ready` as in-progress (not an API error) so reinstall/create callback waits can poll instead of failing on the first check.
+- Private state keys (`order_callback`, `reinstall_callback`, `order_terminal_error`): store JSON-encoded strings so Plugin Framework accepts them (raw callback hex previously failed with «must be valid JSON»).
+
 ### Changed
+
+- `hostkey_server`: on **Unpaid** invoice, Create/Update now **waits for payment in the same apply** (polls `whmcs/get_invoices` within create timeout), then continues deploy link — no second apply required if you pay while `Still creating...`. Soft Warning **Waiting for invoice payment** only if still unpaid when create timeout expires (`pending:<invoice>` kept; re-apply resumes, no re-order).
 
 ## [0.2.0] - 2026-08-24
 

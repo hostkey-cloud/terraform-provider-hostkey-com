@@ -685,17 +685,29 @@ func (r *serverResource) Create(ctx context.Context, req resource.CreateRequest,
 		}
 	}
 
-	// Auto-pay off / insufficient credit: order_instance returns Unpaid + invoice,
-	// and deploy never starts until the customer pays. Soft-exit immediately so
-	// Terraform prints a Warning (CLI cannot customize "Still creating...") and
-	// persists pending:<invoice> instead of polling for up to create-timeout.
+	// Unpaid from order_instance: wait for WHMCS Paid in this apply before
+	// deploy correlation (one apply = pay then link). Soft Warning only if
+	// create timeout expires while still Unpaid.
 	if orderResp.Invoice > 0 && invapi.OrderAwaitsPayment(orderResp.Status) {
-		title, detail := pendingDeployWarningTitleDetail(
-			&invapi.PendingPaymentError{Invoice: orderResp.Invoice, Status: orderResp.Status},
-			orderResp.Invoice, orderResp.Callback, pendingID(orderResp.Invoice),
+		resp.Diagnostics.AddWarning(
+			"Waiting for invoice payment",
+			fmt.Sprintf("WHMCS invoice %d is unpaid. Pay it in the Hostkey panel (Profile → Billing / Invoices; open Unpaid or clear date filters if the list says no invoices found). Terraform keeps waiting in this apply until Paid, then links the server — no second apply needed.", orderResp.Invoice),
 		)
-		resp.Diagnostics.AddWarning(title, detail)
-		return
+		payErr := r.client.WaitForInvoicePayment(ctx, orderResp.Invoice, invapi.WaitOptions{
+			PollInterval: interval,
+			Timeout:      createTimeout,
+			OnPoll: func(status string) {
+				tflog.Info(ctx, "waiting for invoice payment", map[string]any{
+					"invoice": orderResp.Invoice,
+					"status":  status,
+				})
+			},
+		})
+		if payErr != nil {
+			title, detail := pendingDeployWarningTitleDetail(payErr, orderResp.Invoice, orderResp.Callback, pendingID(orderResp.Invoice))
+			resp.Diagnostics.AddWarning(title, detail)
+			return
+		}
 	}
 
 	claimOwner := invapi.PendingClaimOwner(orderResp.Invoice, orderResp.Callback)

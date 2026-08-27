@@ -8,11 +8,13 @@ import (
 	"net/url"
 	"strconv"
 	"strings"
+	"time"
 )
 
-// PendingPaymentError means the WHMCS invoice for this order is still unpaid.
-// Deploy will not start until the customer pays in the Hostkey panel. Soft-exit
-// Create/Update with a Warning (keep pending:<invoice>); do not treat as terminal.
+// PendingPaymentError means the WHMCS invoice for this order is still unpaid
+// after WaitForInvoicePayment timed out (or payment was never started). Deploy
+// will not start until the customer pays. Soft-exit Create/Update with a
+// Warning (keep pending:<invoice>); do not treat as terminal.
 type PendingPaymentError struct {
 	Invoice int
 	Status  string
@@ -36,6 +38,77 @@ func (e *PendingPaymentError) Error() string {
 func IsPendingPayment(err error) bool {
 	var pe *PendingPaymentError
 	return errors.As(err, &pe)
+}
+
+// WaitForInvoicePayment polls WHMCS until the invoice is no longer awaiting
+// payment (Paid / other non-unpaid status) or Timeout. OnPoll receives the
+// latest payment status string (e.g. "Unpaid"). Returns PendingPaymentError if
+// still unpaid when the deadline hits. Unknown/empty status is treated as
+// "keep waiting" until timeout (InvAPI sometimes lags get_invoices).
+func (c *Client) WaitForInvoicePayment(ctx context.Context, invoiceID int, opts WaitOptions) error {
+	if invoiceID <= 0 {
+		return fmt.Errorf("invoice id required")
+	}
+	interval := opts.PollInterval
+	if interval <= 0 {
+		interval = 15 * time.Second
+	}
+	timeout := opts.Timeout
+	if timeout <= 0 {
+		timeout = 90 * time.Minute
+	}
+	deadline := time.Now().Add(timeout)
+	ticker := time.NewTicker(interval)
+	defer ticker.Stop()
+
+	lastStatus := ""
+	check := func() error {
+		st, err := c.WHMCSInvoicePaymentStatus(ctx, invoiceID)
+		if err != nil {
+			return err
+		}
+		lastStatus = st
+		if opts.OnPoll != nil {
+			hint := st
+			if hint == "" {
+				hint = "payment status unknown"
+			}
+			opts.OnPoll(hint)
+		}
+		if st != "" && !OrderAwaitsPayment(st) {
+			return nil
+		}
+		return ErrPendingNotReady
+	}
+
+	if err := check(); err == nil {
+		return nil
+	} else if err != nil && !errors.Is(err, ErrPendingNotReady) {
+		// Transient WHMCS errors: keep polling until timeout.
+		lastStatus = err.Error()
+		if opts.OnPoll != nil {
+			opts.OnPoll(lastStatus)
+		}
+	}
+
+	for {
+		if time.Now().After(deadline) {
+			return &PendingPaymentError{Invoice: invoiceID, Status: lastStatus}
+		}
+		select {
+		case <-ctx.Done():
+			return ctx.Err()
+		case <-ticker.C:
+		}
+		if err := check(); err == nil {
+			return nil
+		} else if err != nil && !errors.Is(err, ErrPendingNotReady) {
+			lastStatus = err.Error()
+			if opts.OnPoll != nil {
+				opts.OnPoll(lastStatus)
+			}
+		}
+	}
 }
 
 // OrderAwaitsPayment reports whether order_instance / invoice status means the

@@ -74,6 +74,7 @@ func TestBuildReinstallRequestOmitsCreateFields(t *testing.T) {
 		IPv6Block:         types.BoolValue(true),
 		DiskMirror:        types.StringValue("raid1"),
 		PresetName:        types.StringValue("bm.v2-promo"),
+		Hostname:          types.StringValue(" web-01 "),
 		SSHKey:            types.StringValue("ssh-ed25519 AAAA"),
 		PostInstallScript: types.StringValue("echo hi"),
 	}
@@ -84,11 +85,17 @@ func TestBuildReinstallRequestOmitsCreateFields(t *testing.T) {
 	if req.Preset != "" {
 		t.Fatalf("preset=%q", req.Preset)
 	}
-	if req.LocationName != "" || req.TrafficPlan != 0 || req.IPv4Amount != 0 || req.VLAN != 0 || req.IPv6Block != nil {
-		t.Fatalf("create-only fields leaked: %+v", req)
+	if req.TrafficPlan != 0 || req.IPv4Amount != 0 || req.VLAN != 0 || req.IPv6Block != nil {
+		t.Fatalf("create-only network fields leaked: %+v", req)
+	}
+	if req.LocationName != "NL" {
+		t.Fatalf("location_name=%q (required for reinstall OS check)", req.LocationName)
 	}
 	if req.OSID != 187 || req.RootPass != "Abcdef1%" || req.DiskMirror != "raid1" {
 		t.Fatalf("install fields missing: %+v", req)
+	}
+	if req.Hostname != "web-01" {
+		t.Fatalf("hostname=%q", req.Hostname)
 	}
 	if req.SSHKey == "" || req.PostInstallScript == "" {
 		t.Fatal("ssh/script should be sent on reinstall")

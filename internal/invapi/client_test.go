@@ -20,6 +20,12 @@ func TestDecodeAPIError_OK(t *testing.T) {
 	}
 }
 
+func TestDecodeAPIError_NotReady(t *testing.T) {
+	if err := decodeAPIError([]byte(`{"result":"Not ready"}`)); err != nil {
+		t.Fatalf("Not ready must not be an API error (callback poll): %v", err)
+	}
+}
+
 func TestDecodeAPIError_Message(t *testing.T) {
 	err := decodeAPIError([]byte(`{"code":1,"error":"boom"}`))
 	if err == nil {

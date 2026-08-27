@@ -113,7 +113,7 @@ func setPrivateCallback(ctx context.Context, priv privateData, callback string) 
 	if priv == nil || callback == "" {
 		return nil
 	}
-	diags := priv.SetKey(ctx, privateCallbackKey, []byte(callback))
+	diags := priv.SetKey(ctx, privateCallbackKey, mustPrivateJSONString(callback))
 	if diags.HasError() {
 		return fmt.Errorf("set private callback: %s", diags[0].Detail())
 	}
@@ -128,24 +128,16 @@ func getPrivateCallback(ctx context.Context, priv privateData) string {
 	if diags.HasError() || len(val) == 0 {
 		return ""
 	}
-	return strings.TrimSpace(string(val))
+	return parsePrivateJSONString(val)
 }
 
 func setPrivateReinstallCallback(ctx context.Context, priv privateData, callback string) error {
 	callback = strings.TrimSpace(callback)
-	if priv == nil || callback == "" {
-		// Keep semantics: empty callback means "not in progress".
-		if priv == nil {
-			return nil
-		}
-		// Store empty bytes to make getPrivateReinstallCallback() return "".
-		diags := priv.SetKey(ctx, privateReinstallCallbackKey, []byte{})
-		if diags.HasError() {
-			return fmt.Errorf("set private reinstall callback: %s", diags[0].Detail())
-		}
+	if priv == nil {
 		return nil
 	}
-	diags := priv.SetKey(ctx, privateReinstallCallbackKey, []byte(callback))
+	// Empty means "not in progress". Store JSON "" so Plugin Framework accepts the value.
+	diags := priv.SetKey(ctx, privateReinstallCallbackKey, mustPrivateJSONString(callback))
 	if diags.HasError() {
 		return fmt.Errorf("set private reinstall callback: %s", diags[0].Detail())
 	}
@@ -160,7 +152,7 @@ func getPrivateReinstallCallback(ctx context.Context, priv privateData) string {
 	if diags.HasError() || len(val) == 0 {
 		return ""
 	}
-	return strings.TrimSpace(string(val))
+	return parsePrivateJSONString(val)
 }
 
 func setPrivateTerminalError(ctx context.Context, priv privateData, msg string) error {
@@ -168,15 +160,11 @@ func setPrivateTerminalError(ctx context.Context, priv privateData, msg string) 
 	if priv == nil {
 		return nil
 	}
-	if msg == "" {
-		diags := priv.SetKey(ctx, privateTerminalKey, []byte{})
-		if diags.HasError() {
+	diags := priv.SetKey(ctx, privateTerminalKey, mustPrivateJSONString(msg))
+	if diags.HasError() {
+		if msg == "" {
 			return fmt.Errorf("clear private terminal error: %s", diags[0].Detail())
 		}
-		return nil
-	}
-	diags := priv.SetKey(ctx, privateTerminalKey, []byte(msg))
-	if diags.HasError() {
 		return fmt.Errorf("set private terminal error: %s", diags[0].Detail())
 	}
 	return nil
@@ -190,6 +178,24 @@ func getPrivateTerminalError(ctx context.Context, priv privateData) string {
 	if diags.HasError() || len(val) == 0 {
 		return ""
 	}
+	return parsePrivateJSONString(val)
+}
+
+// Plugin Framework private state values must be valid JSON (not raw strings).
+func mustPrivateJSONString(s string) []byte {
+	b, err := json.Marshal(s)
+	if err != nil {
+		return []byte(`""`)
+	}
+	return b
+}
+
+func parsePrivateJSONString(val []byte) string {
+	var s string
+	if err := json.Unmarshal(val, &s); err == nil {
+		return strings.TrimSpace(s)
+	}
+	// Legacy: raw (non-JSON) bytes from older provider builds.
 	return strings.TrimSpace(string(val))
 }
 
@@ -205,7 +211,7 @@ func pendingDeployWarningTitleDetail(err error, invoice int, callback, pendingID
 	if invapi.IsPendingPayment(err) {
 		title = "Waiting for invoice payment"
 		detail = fmt.Sprintf(
-			"%v. Pay this invoice in the Hostkey panel (Profile → Billing / Invoices; auto-pay from credit balance is off or funds are insufficient). State kept as %s. After payment, re-run terraform apply — it will wait for this invoice and will not place a new order.",
+			"%v. Apply waited for payment until create timeout; Pay this invoice in the Hostkey panel (Profile в†’ Billing / Invoices; enable auto-pay from credit balance or top up). State kept as %s. Re-run terraform apply after payment вЂ” it resumes this invoice and will not place a new order. Or keep the first apply running and pay while it still shows Still creating...",
 			err, id,
 		)
 		return title, detail

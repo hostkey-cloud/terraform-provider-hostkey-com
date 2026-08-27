@@ -21,7 +21,7 @@ One resource covers the whole catalog. There is no separate GPU/VDS type:
 
 Always pair the preset with a traffic plan for that **preset id** (`instance_id` in [hostkey_traffic_plans](../data-sources/traffic_plans.md)). GPU dedic often uses unmetered-style plans; vGPU often uses dedic-style names (`1Gbps 50TB - FREE`). Confirm names and prices in the catalog.
 
-Changing OS / software / `root_pass` / `ssh_key` (or `reinstall_trigger`) **reinstalls the same server id** — disk is wiped. Reinstall sends only install fields (`os_id`, software, `root_pass`, SSH key, RAID/LVM, scripts) — not location, traffic plan, extra IPv4, or VLAN. Changes to preset, location, traffic plan or billing period force **replace** (new order).
+Changing OS / software / `root_pass` / `ssh_key` (or `reinstall_trigger`) **reinstalls the same server id** — disk is wiped. Reinstall sends install fields (`os_id`, software, `root_pass`, SSH key, RAID/LVM, scripts, **`hostname`**, **`location_name`**) — not traffic plan, extra IPv4, or VLAN. Changes to preset, location, traffic plan or billing period force **replace** (new order). Guest OS hostname is still a separate InvAPI/OpenStack channel (`cloud_init_script` / post-install); Terraform tracks InvAPI tags.
 
 When you set only `os_name`, `soft_name`, or `traffic_plan_name`, the provider resolves the matching `*_id` at plan time (you do not need to set both). If an existing server needs reinstall, `terraform plan` still shows **update in-place**, but emits a **warning** that the disk will be wiped — treat that like a destructive change, not a tag update.
 
