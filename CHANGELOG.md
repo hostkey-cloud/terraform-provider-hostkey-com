@@ -17,6 +17,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - `hostkey_server` destroy with `cancellation_type=0`: submit `whmcs/request_cancellation`, warn that the server stays active until period end, and remove from Terraform state without waiting for status to leave `rent`.
 
+### Fixed
+
+- Bump `google.golang.org/grpc` to `v1.83.2` (govulncheck: GO-2026-6443, GO-2026-6348).
+
 ## [0.2.1] - 2026-08-27
 
 ### Fixed
