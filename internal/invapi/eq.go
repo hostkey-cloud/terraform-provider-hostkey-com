@@ -180,9 +180,7 @@ func (c *Client) WHMCSRequestCancellation(ctx context.Context, serverID int, rea
 	params := url.Values{}
 	params.Set("action", "request_cancellation")
 	params.Set("id", strconv.Itoa(serverID))
-	if reason != "" {
-		params.Set("cancellation_reason", reason)
-	}
+	params.Set("cancellation_reason", reason)
 	if cancellationType != nil {
 		params.Set("cancellation_type", strconv.Itoa(*cancellationType))
 	}

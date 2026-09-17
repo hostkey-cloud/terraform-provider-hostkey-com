@@ -65,14 +65,15 @@ variable "root_pass" {
 }
 
 resource "hostkey_server" "web" {
-  preset_name       = "vm.pico"
-  location_name     = "NL"
-  os_name           = "Ubuntu 22.04"
-  traffic_plan_name = "3 TB / 1 Gbps VM"
-  deploy_period     = "monthly"
-  root_pass         = var.root_pass
-  power_state       = "on"
-  cancellation_type = 1
+  preset_name         = "vm.pico"
+  location_name       = "NL"
+  os_name             = "Ubuntu 22.04"
+  traffic_plan_name   = "3 TB / 1 Gbps VM"
+  deploy_period       = "monthly"
+  root_pass           = var.root_pass
+  power_state         = "on"
+  cancellation_type   = 1 # 0 = end of paid period, 1 = immediate
+  cancellation_reason = "terraform example destroy"
 
   timeouts {
     create = "90m"
@@ -132,7 +133,7 @@ Orders are **paid**. Create is async (default timeout 90m).
 terraform destroy
 ```
 
-Calls `whmcs/request_cancellation` with `cancellation_type` / `cancellation_reason`.
+Calls `whmcs/request_cancellation` with required `cancellation_type` (`0` = end of paid period, `1` = immediate) and `cancellation_reason` (same as the panel cancellation form). Set both in HCL **before** destroy — Terraform does not prompt interactively.
 
 ## InvAPI notes
 

@@ -31,14 +31,15 @@ When you set only `os_name`, `soft_name`, or `traffic_plan_name`, the provider r
 
 ```hcl
 resource "hostkey_server" "web" {
-  preset_name       = "vm.pico"
-  location_name     = "NL"
-  os_name           = "Ubuntu 22.04"
-  traffic_plan_name = "3 TB / 1 Gbps VM"
-  deploy_period     = "monthly"
-  root_pass         = var.root_pass
-  power_state       = "on"
-  cancellation_type = 1
+  preset_name         = "vm.pico"
+  location_name       = "NL"
+  os_name             = "Ubuntu 22.04"
+  traffic_plan_name   = "3 TB / 1 Gbps VM"
+  deploy_period       = "monthly"
+  root_pass           = var.root_pass
+  power_state         = "on"
+  cancellation_type   = 1
+  cancellation_reason = "terraform example destroy"
 
   tags = {
     env = "prod"
@@ -51,6 +52,27 @@ resource "hostkey_server" "web" {
   }
 }
 ```
+
+### Destroy / cancellation (panel parity)
+
+`terraform destroy` calls [`whmcs/request_cancellation`](https://hostkey.com/documentation/apidocs/whmcs/#request_cancellation). Like the Hostkey panel, each server **must** declare:
+
+| Attribute | Values |
+|-----------|--------|
+| `cancellation_type` | `0` — cancel at **end of paid billing period** (server keeps running until then); `1` — **immediate** (when InvAPI/WHMCS allows) |
+| `cancellation_reason` | Non-empty reason string (same idea as the panel form). Terraform cannot prompt on destroy — set it in HCL **before** `destroy`. |
+
+Example — keep the VM until the period ends:
+
+```hcl
+resource "hostkey_server" "web" {
+  # ... order fields ...
+  cancellation_type   = 0
+  cancellation_reason = "Project finished; no renewal"
+}
+```
+
+With `cancellation_type = 0`, destroy submits the scheduled cancellation and removes the resource from Terraform state immediately (the server may still show as active in the panel until the period ends).
 
 ### Dedicated
 
@@ -71,14 +93,15 @@ Set `disk_mirror` only when InvAPI `presets/list` shows **2+ disks** (`hdd` like
 
 ```hcl
 resource "hostkey_server" "dedic" {
-  preset_name       = "bm.v2-promo"
-  location_name     = "NL"
-  os_name           = "Ubuntu 22.04"
-  traffic_plan_name = "1Gbps unmetered (10000 P)"
-  deploy_period     = "monthly"
-  root_pass         = var.root_pass
-  power_state       = "on"
-  cancellation_type = 1
+  preset_name         = "bm.v2-promo"
+  location_name       = "NL"
+  os_name             = "Ubuntu 22.04"
+  traffic_plan_name   = "1Gbps unmetered (10000 P)"
+  deploy_period       = "monthly"
+  root_pass           = var.root_pass
+  power_state         = "on"
+  cancellation_type   = 1
+  cancellation_reason = "terraform dedic example destroy"
 
   # Catalog shows 1 disk — omit disk_mirror (panel RAID type is empty).
   no_lvm      = true  # classic partitions instead of LVM
@@ -108,6 +131,8 @@ Same resource and attributes as VPS/dedicated — change **`preset_name`** and p
 
 - `location_name` (String) Data-center code (`NL`, `US`, `FI`, `DE`, `RU`, …). This provider always uses `invapi.hostkey.com` (not the `.ru` portal).
 - `root_pass` (String, Sensitive) Root password (8–30 chars: upper, lower, digit, and one of `% - _ +`; no `@`/`#`). Change triggers reinstall.
+- `cancellation_type` (Number) — `0` end of paid billing period, `1` immediate (when allowed). Used on destroy; same choice as the Hostkey panel.
+- `cancellation_reason` (String) — non-empty reason for `whmcs/request_cancellation` (panel parity). Set in HCL before `terraform destroy`.
 
 ### Optional
 
@@ -127,8 +152,6 @@ Same resource and attributes as VPS/dedicated — change **`preset_name`** and p
 - `power_off_hard` — use `eq/hard_off` when turning off.
 - `reboot_trigger` — change the string to call `eq/reboot` once.
 - `reinstall_trigger` — change the string to force reinstall with current OS/software.
-- `cancellation_type` — `0` end of period, `1` immediate (when allowed). Used on destroy.
-- `cancellation_reason` — reason for cancellation.
 - `poll_interval_seconds` — deploy poll interval (default `15`).
 - `timeouts` — `create` / `update` / `delete`.
 

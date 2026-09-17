@@ -33,6 +33,9 @@ const (
 	maxTagKeyLen     = 64
 	maxTagValueLen   = 256
 
+	// Panel-style cancellation reason for whmcs/request_cancellation.
+	maxCancellationReasonLen = 500
+
 	// Install-time fields forwarded to InvAPI as-is for bare-metal reinstall.
 	// These caps avoid unbounded client-side payload sizes (DoS / accidental huge scripts),
 	// while staying generous enough for real-world options strings.
@@ -102,6 +105,10 @@ func stringMaxLen(name string, max int) validator.String {
 	return stringLengthValidator{name: name, max: max}
 }
 
+func stringNonBlank(name string) validator.String {
+	return stringNonBlankValidator{name: name}
+}
+
 type stringLengthValidator struct {
 	name string
 	max  int
@@ -123,6 +130,28 @@ func (v stringLengthValidator) ValidateString(_ context.Context, req validator.S
 	if len(s) > v.max {
 		resp.Diagnostics.AddAttributeError(req.Path, fmt.Sprintf("Invalid %s", v.name),
 			fmt.Sprintf("%s must be at most %d characters; got %d", v.name, v.max, len(s)))
+	}
+}
+
+type stringNonBlankValidator struct {
+	name string
+}
+
+func (v stringNonBlankValidator) Description(_ context.Context) string {
+	return fmt.Sprintf("%s must be a non-empty string", v.name)
+}
+
+func (v stringNonBlankValidator) MarkdownDescription(ctx context.Context) string {
+	return v.Description(ctx)
+}
+
+func (v stringNonBlankValidator) ValidateString(_ context.Context, req validator.StringRequest, resp *validator.StringResponse) {
+	if req.ConfigValue.IsNull() || req.ConfigValue.IsUnknown() {
+		return
+	}
+	if strings.TrimSpace(req.ConfigValue.ValueString()) == "" {
+		resp.Diagnostics.AddAttributeError(req.Path, fmt.Sprintf("Invalid %s", v.name),
+			fmt.Sprintf("%s must not be empty (same as the Hostkey panel cancellation form).", v.name))
 	}
 }
 

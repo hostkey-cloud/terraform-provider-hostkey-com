@@ -24,14 +24,15 @@ variable "root_pass" {
 }
 
 resource "hostkey_server" "web" {
-  preset_name       = "vm.pico"
-  location_name     = "NL"
-  os_name           = "Ubuntu 22.04"
-  traffic_plan_name = "3 TB / 1 Gbps VM"
-  deploy_period     = "monthly"
-  root_pass         = var.root_pass
-  power_state       = "on"
-  cancellation_type = 1
+  preset_name         = "vm.pico"
+  location_name       = "NL"
+  os_name             = "Ubuntu 22.04"
+  traffic_plan_name   = "3 TB / 1 Gbps VM"
+  deploy_period       = "monthly"
+  root_pass           = var.root_pass
+  power_state         = "on"
+  cancellation_type   = 1
+  cancellation_reason = "terraform basic example destroy"
 
   timeouts {
     create = "90m"

@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.2.2] - 2026-09-17
+
+### Breaking
+
+- `hostkey_server`: `cancellation_type` and `cancellation_reason` are **required** (panel parity). `cancellation_type=0` schedules cancel at end of paid period; `1` is immediate. Destroy no longer defaults the reason to `Cancelled via Terraform`. Existing configs must set both attributes before the next plan/destroy.
+
+### Changed
+
+- `hostkey_server` destroy with `cancellation_type=0`: submit `whmcs/request_cancellation`, warn that the server stays active until period end, and remove from Terraform state without waiting for status to leave `rent`.
+
 ## [0.2.1] - 2026-08-27
 
 ### Fixed

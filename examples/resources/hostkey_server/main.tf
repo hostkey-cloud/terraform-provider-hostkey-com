@@ -63,12 +63,12 @@ variable "root_pass" {
 
 variable "cancellation_type" {
   type    = number
-  default = null
+  default = 1
 }
 
 variable "cancellation_reason" {
   type    = string
-  default = null
+  default = "terraform full-cycle test"
 }
 
 # Fresh create example (full cycle test).
@@ -89,8 +89,8 @@ resource "hostkey_server" "example" {
     managed = "hostkey-provider"
   }
 
-  cancellation_type   = 1
-  cancellation_reason = "terraform full-cycle test"
+  cancellation_type   = var.cancellation_type
+  cancellation_reason = var.cancellation_reason
 
   timeouts {
     create = "90m"

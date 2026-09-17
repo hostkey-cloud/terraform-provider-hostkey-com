@@ -388,12 +388,16 @@ func (r *serverResource) Schema(ctx context.Context, _ resource.SchemaRequest, r
 				},
 			},
 			"cancellation_reason": schema.StringAttribute{
-				Description: "Reason passed to whmcs/request_cancellation on destroy.",
-				Optional:    true,
+				Description: "Required cancellation reason (same as the Hostkey panel form). Passed to whmcs/request_cancellation on destroy. Set per server before terraform destroy.",
+				Required:    true,
+				Validators: []validator.String{
+					stringNonBlank("cancellation_reason"),
+					stringMaxLen("cancellation_reason", maxCancellationReasonLen),
+				},
 			},
 			"cancellation_type": schema.Int64Attribute{
-				Description: "Cancellation type on destroy: 0 = end of billing period, 1 = immediate with refund (when allowed). Omit for InvAPI/panel default.",
-				Optional:    true,
+				Description: "Required cancellation timing on destroy (same as the Hostkey panel): 0 = end of paid billing period (server keeps running until then), 1 = immediate when InvAPI/WHMCS allows. Must be set explicitly per server.",
+				Required:    true,
 				Validators: []validator.Int64{
 					oneOfInt64("cancellation_type", 0, 1),
 				},
@@ -1192,28 +1196,46 @@ func (r *serverResource) Delete(ctx context.Context, req resource.DeleteRequest,
 	ctx, cancel := context.WithTimeout(ctx, deleteTimeout)
 	defer cancel()
 
-	reason := "Cancelled via Terraform"
-	if !state.CancellationReason.IsNull() {
-		reason = state.CancellationReason.ValueString()
+	reason := strings.TrimSpace(state.CancellationReason.ValueString())
+	if state.CancellationReason.IsNull() || reason == "" {
+		resp.Diagnostics.AddAttributeError(
+			path.Root("cancellation_reason"),
+			"cancellation_reason is required",
+			"Set cancellation_reason on this hostkey_server (same as the Hostkey panel cancellation form) before terraform destroy. Terraform cannot prompt interactively.",
+		)
+		return
 	}
-
-	var cancelType *int
-	if !state.CancellationType.IsNull() {
-		v := int(state.CancellationType.ValueInt64())
-		cancelType = &v
+	if state.CancellationType.IsNull() {
+		resp.Diagnostics.AddAttributeError(
+			path.Root("cancellation_type"),
+			"cancellation_type is required",
+			"Set cancellation_type to 0 (end of paid billing period) or 1 (immediate, when allowed) before terraform destroy — same choice as in the Hostkey panel.",
+		)
+		return
 	}
+	cancelType := int(state.CancellationType.ValueInt64())
 
 	tflog.Info(ctx, "Requesting Hostkey service cancellation", map[string]any{
 		"server_id":         serverID,
 		"cancellation_type": cancelType,
 	})
 
-	if err := r.client.WHMCSRequestCancellation(ctx, serverID, reason, cancelType); err != nil {
+	if err := r.client.WHMCSRequestCancellation(ctx, serverID, reason, &cancelType); err != nil {
 		resp.Diagnostics.AddError("Cancellation failed", err.Error())
 		return
 	}
 
-	// Cancellation is accepted asynchronously; wait until status leaves "rent" when possible.
+	// type=0: panel schedules cancel at end of paid period; status usually stays
+	// "rent" until then. Do not wait — remove from Terraform state now.
+	if cancelType == 0 {
+		resp.Diagnostics.AddWarning(
+			"Cancellation scheduled for end of billing period",
+			fmt.Sprintf("WHMCS request_cancellation accepted for server %d with cancellation_type=0. The server remains active until the paid period ends; Terraform removes it from state now. Check the Hostkey panel for the scheduled cancellation.", serverID),
+		)
+		return
+	}
+
+	// type=1: immediate cancel — wait until status leaves "rent" when possible.
 	deadline := time.Now().Add(deleteTimeout)
 	ticker := time.NewTicker(pollInterval)
 	defer ticker.Stop()
@@ -1235,7 +1257,7 @@ func (r *serverResource) Delete(ctx context.Context, req resource.DeleteRequest,
 	}
 	resp.Diagnostics.AddWarning(
 		"Cancellation submitted",
-		"InvAPI accepted request_cancellation, but the server still reports status=rent within the delete timeout. Check the panel; Terraform will still remove it from state.",
+		"InvAPI accepted request_cancellation (immediate), but the server still reports status=rent within the delete timeout. Check the panel; Terraform will still remove it from state.",
 	)
 }
 

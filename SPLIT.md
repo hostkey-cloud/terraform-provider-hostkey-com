@@ -5,8 +5,8 @@ Sibling checkout: `../terraform-provider-hostkey` (becomes `terraform-provider-h
 
 | | RU | COM |
 |--|----|-----|
-| GitHub | `hostkey-cloud/terraform-provider-hostkey-ru` | `hostkey-cloud/terraform-provider-hostkey-com` |
-| Registry | `registry.terraform.io/hostkey-cloud/hostkey-ru` | `…/hostkey-com` |
+| GitHub | `hostkey-cloud-ru/terraform-provider-hostkey-ru` | `hostkey-cloud/terraform-provider-hostkey-com` |
+| Registry | `registry.terraform.io/hostkey-cloud-ru/hostkey-ru` | `…/hostkey-com` |
 | InvAPI | `https://invapi.hostkey.ru/` only | `https://invapi.hostkey.com/` only |
 | Docs | Russian, hostkey.ru | English, hostkey.com |
 | TypeName | `hostkey` (resources `hostkey_*`) | same |
@@ -52,6 +52,6 @@ terraform state replace-provider \
 1. Push this tree to `terraform-provider-hostkey-com` (new origin; separate GoReleaser GPG secrets).
 2. Register `hostkey-cloud/hostkey-com` on Terraform Registry.
 3. Stop publishing tags that release to old `hostkey-cloud/hostkey`.
-4. Tag **v0.2.0** after Registry is pointed at this GitHub name.
+4. Tag **v0.2.0** after `main` is committed, Registry publisher points at this GitHub name, and GoReleaser GPG secrets exist.
 
 Hard ban: never ship server id **56909**.
