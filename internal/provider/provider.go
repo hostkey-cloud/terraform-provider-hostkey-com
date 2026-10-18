@@ -202,5 +202,6 @@ func (p *hostkeyProvider) DataSources(_ context.Context) []func() datasource.Dat
 		NewSSHKeysDataSource,
 		NewSoftwareDataSource,
 		NewDNSDomainsDataSource,
+		NewServersDataSource,
 	}
 }

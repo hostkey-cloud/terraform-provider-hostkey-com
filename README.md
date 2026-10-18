@@ -31,6 +31,7 @@ Full attribute reference: [`docs/`](docs/) ([Terraform Registry](https://registr
 | [`hostkey_software`](docs/data-sources/software.md) | Marketplace software for a preset |
 | [`hostkey_ssh_keys`](docs/data-sources/ssh_keys.md) | Account SSH keys |
 | [`hostkey_dns_domains`](docs/data-sources/dns_domains.md) | Account DNS zones |
+| [`hostkey_servers`](docs/data-sources/servers.md) | Account servers (`eq/list` + `eq/show`) |
 
 One `hostkey_server` resource covers the catalog: `vm.*`, `vds.*`, `bm.*`, `gpu.*`, `vgpu.*`. Dedicated / GPU: [docs/resources/server.md](docs/resources/server.md).
 
